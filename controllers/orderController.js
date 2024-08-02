@@ -62,7 +62,7 @@ const createOrder = async (req, res) => {
     const user_id = req.user;
     const { cust_name, cust_PhNo, cust_address } = req.body;
     const user = await User.findOne({ _id: user_id})
-    console.log(user.email)
+    
 
     try {
         

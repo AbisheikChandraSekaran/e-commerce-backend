@@ -9,7 +9,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const MONGO_URI = process.env.MONGO_URI;
-const Port = process.env.Port;
+const Port = process.env.PORT || 3000;
 app.use(cors());
 const mongoose = require('mongoose');
 
