@@ -77,7 +77,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const createOrder = async (req, res) => {
     const user_id = req.user;
-    const { cust_Name, cust_Address, cust_PhNo } = req.body;
+    const { cust_name, cust_address, cust_PhNo } = req.body;
 
     try {
         const cart = await Cart.findOne({ user_id });
@@ -85,7 +85,7 @@ const createOrder = async (req, res) => {
             return res.status(404).send({ message: 'Cart not found' });
         }
 
-        const user = await User.findById(user_id);
+        const user = await User.findOne({ _id: user_id})
         const { email } = user;
 
         const products = cart.products.map((product) => {
@@ -106,12 +106,12 @@ const createOrder = async (req, res) => {
         const totalAmount = subtotal.reduce((acc, amount) => acc + amount, 0);
 
         const order = new Order({
-            id: uuidv4(),
+            orderId: uuidv4(),
             user_id,
             user_email: email,
-            cust_Name,
-            cust_Address,
-            cust_PhNO: cust_PhNo,
+            cust_name,
+            cust_address,
+            cust_PhNo,
             products,
             totalAmount,
             // orderStatus: "Pending", 
@@ -132,7 +132,7 @@ const createOrder = async (req, res) => {
 const getOrders = async(req, res) => {
     const user_id = req.user;
     try {
-        const orders = await Order.find({ user_id }, { cust_Name: 0, cust_Address: 0, cust_PhNO: 0 });
+        const orders = await Order.find({ user_id });
         const ordersWithProductDetails = await Promise.all(orders.map(async (order) => {
             const productsWithDetails = await Promise.all(order.products.map(async (product) => {
                 const productInfo = await Product.findOne({ id: product.product_id });
@@ -149,7 +149,7 @@ const getOrders = async(req, res) => {
                 };
             }));
             return {
-                Orderid: order.id,
+                Orderid: order.orderId,
                 products: productsWithDetails,
                 totalAmount: order.totalAmount,
                 orderDate: order.orderDate,
