@@ -4,15 +4,15 @@ const Product = require('../models/productModel');
 const CartServices = require('../services/cartServices')
 
 const addToCart = async (req, res) => {
-    const user_id = req.user; // Extracted user ID from the JWT token
-    const { products } = req.body;
+    const user_id = req.user; 
+    const { products } = req.body; 
 
     try {
-        const cart = await Cart.findOne({ user_id });
+        let cart = await Cart.findOne({ user_id });
         if (!cart) {
-            const newCart = new Cart({ user_id, products });
-            await newCart.save();
-            return res.status(201).send(newCart);
+            cart = new Cart({ user_id, products });
+            await cart.save();
+            return res.status(201).send(cart);
         }
 
         for (const product of products) {
@@ -30,12 +30,14 @@ const addToCart = async (req, res) => {
         return res.send(cart);
     } catch (error) {
         console.error(error);
-        res.status(500).send({ message: 'Internal Server Error' });
+        res.status(500).send(error.message);
     }
 };
 
+
 const getCartItems = async (req, res) => {
     const user_id = req.user; 
+
     try {
         const cart = await Cart.findOne({ user_id });
         if (!cart) {
@@ -53,20 +55,21 @@ const getCartItems = async (req, res) => {
                 title: productInfo.title,
                 description: productInfo.description,
                 image: productInfo.image,
-                price: productInfo.price,
-                rating : productInfo.rating
+                price: productInfo.price
             };
         }));
 
-        
-        const filteredProductDetails = productDetails.filter(details => details !== null);
-        const subtotal =  filteredProductDetails.reduce((acc, curr) => {
-            return acc + (curr.price * curr.quantity);
+        // const filteredProductDetails = productDetails.filter(details => details !== null);
+
+        const subtotal = productDetails.reduce((acc, product) => {
+            return acc + (product.price * product.quantity);
         }, 0);
-        res.send({filteredProductDetails,subtotal});
-        
+
+        res.send({
+            products: productDetails,
+            subtotal: subtotal
+        });
     } catch (error) {
-        console.error(error);
         res.status(500).send(error.message);
     }
 };
